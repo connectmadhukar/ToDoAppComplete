@@ -8,7 +8,8 @@
 
 #import "ToDoTableViewController.h"
 #import "ToDoCustomCell.h"
-
+#import <objc/runtime.h>
+static char indexPathKey;
 
 @interface ToDoTableViewController ()
 
@@ -21,9 +22,15 @@
     self = [super initWithStyle:style];
     if (self) {
         self.toDoArray = [NSMutableArray array];
-        [self.toDoArray addObject:@"Eat BreakFast"];
-        [self.toDoArray addObject:@"go to gym"];
-        [self.toDoArray addObject:@""];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        NSMutableArray *prevToDoItems = [defaults objectForKey:@"ToDoItems"];
+        if( prevToDoItems && prevToDoItems.count !=0 ) {
+            [self.toDoArray addObjectsFromArray:prevToDoItems];
+        } else {
+            [self.toDoArray addObject:@"Eat BreakFast"];
+            [self.toDoArray addObject:@"go to gym"];
+            [self.toDoArray addObject:@""];
+        }
         self.title=@"To Do List";
     }
     return self;
@@ -77,8 +84,7 @@
     static NSString *cellIdentifier = @"ToDoCustomCell";
     ToDoCustomCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     cell.toDoItem.text = [self.toDoArray objectAtIndex:indexPath.row];
-    
-    // Configure the cell...
+    objc_setAssociatedObject(cell.toDoItem, &indexPathKey, indexPath, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     
     return cell;
 }
@@ -101,11 +107,20 @@
         [self.toDoArray removeLastObject];
         [self.toDoArray addObject:toDoCustomCell.toDoItem.text];
         [self.toDoArray addObject:@""];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setObject:self.toDoArray
+                     forKey:@"ToDoItems"];
+        [defaults synchronize];
         [self.tableView reloadData];
         NSLog(@"UITableViewCellEditingStyleInsert pressed %ld. DataStore size: %ld", indexPath.row, [self.toDoArray count] );
     }   
 }
 
+- (void)tableView:(UITableView*)tableView didEndEditingRowAtIndexPath:(NSIndexPath *)indexPath {
+     [super didReceiveMemoryWarning];
+    NSLog(@"didEndEditingRowAtIndexPath pressed %ld. DataStore size: %ld", indexPath.row, [self.toDoArray count] );
+    
+}
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
     
@@ -141,10 +156,12 @@
             [self.toDoArray insertObject:obj atIndex:to];
         }
         //[obj release];
-    } else {
-       [self.tableView reloadData];
     }
-    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:self.toDoArray
+                  forKey:@"ToDoItems"];
+    [defaults synchronize];
+    [self.tableView reloadData];
 }
 
 
