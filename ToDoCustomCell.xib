@@ -22,7 +22,7 @@
                 </subviews>
             </tableViewCellContentView>
             <connections>
-                <outlet property="toDoItem" destination="GmZ-dE-gNW" id="2Cf-bd-3Ei"/>
+                <outlet property="toDoItem" destination="GmZ-dE-gNW" id="Skj-Q5-tLS"/>
             </connections>
         </tableViewCell>
     </objects>

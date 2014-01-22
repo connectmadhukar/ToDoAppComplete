@@ -7,6 +7,12 @@
 //
 
 #import "ToDoCustomCell.h"
+#import "ToDoTableViewController.h"
+
+@interface ToDoCustomCell ()
+- (IBAction)editingChanged:(id)sender;
+
+@end
 
 @implementation ToDoCustomCell
 
@@ -24,6 +30,12 @@
     [super setSelected:selected animated:animated];
 
     // Configure the view for the selected state
+}
+
+
+- (IBAction)editingChanged:(id)sender {
+    NSLog(@"fEditingChanged");
+   
 }
 
 @end

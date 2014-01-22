@@ -9,6 +9,7 @@
 #import "ToDoTableViewController.h"
 #import "ToDoCustomCell.h"
 #import <objc/runtime.h>
+
 static char indexPathKey;
 
 @interface ToDoTableViewController ()
@@ -85,8 +86,36 @@ static char indexPathKey;
     ToDoCustomCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     cell.toDoItem.text = [self.toDoArray objectAtIndex:indexPath.row];
     objc_setAssociatedObject(cell.toDoItem, &indexPathKey, indexPath, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    
+    cell.toDoItem.delegate = self;
     return cell;
+}
+
+- (BOOL) textFieldShouldReturn:(UITextField *)textField {
+    //NSLog(@"inside textFieldShouldReturn in ToDoCell");
+    NSIndexPath *indexPath = objc_getAssociatedObject(textField, &indexPathKey);
+    if([indexPath row] == ([self.toDoArray count] -1) ) {
+        [self.toDoArray addObject:@""];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setObject:self.toDoArray
+                     forKey:@"ToDoItems"];
+        [defaults synchronize];
+    }
+    [self.tableView reloadData];
+    return YES;
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    NSLog(@"inside shouldChangeCharactersInRange in ToDoCell %@", string);
+    NSLog(@"inside shouldChangeCharactersInRange in ToDoCell %@", [textField.text stringByReplacingCharactersInRange:range withString:string]);
+    NSString *resultText = [textField.text stringByReplacingCharactersInRange:range withString:string];
+    NSIndexPath *indexPath = objc_getAssociatedObject(textField, &indexPathKey);
+    //NSLog(@"inside textFieldShouldReturn in ToDoCell %@",[self.toDoArray objectAtIndex:indexPath.row]);
+    [self.toDoArray replaceObjectAtIndex:indexPath.row withObject:resultText];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:self.toDoArray
+                 forKey:@"ToDoItems"];
+    [defaults synchronize];
+    return YES;
 }
 
 // Override to support editing the table view.
@@ -116,11 +145,6 @@ static char indexPathKey;
     }   
 }
 
-- (void)tableView:(UITableView*)tableView didEndEditingRowAtIndexPath:(NSIndexPath *)indexPath {
-     [super didReceiveMemoryWarning];
-    NSLog(@"didEndEditingRowAtIndexPath pressed %ld. DataStore size: %ld", indexPath.row, [self.toDoArray count] );
-    
-}
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
     

@@ -8,8 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ToDoTableViewController : UITableViewController
-
-@property (nonatomic) NSMutableArray *toDoArray;
-
+@interface ToDoTableViewController : UITableViewController <UITextFieldDelegate>
+ @property (nonatomic) NSMutableArray *toDoArray;
 @end
